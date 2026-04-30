@@ -9,6 +9,10 @@
 
 `timescale 1ns / 1ps
 
+//==============================================================================
+// Testbench Interface
+//==============================================================================
+
 interface AsyncFifoIf #(
     parameter int DATA_WIDTH = 8
 );
@@ -26,9 +30,17 @@ endinterface
 
 module TbAsyncFifo;
 
+    //==============================================================================
+    // Testbench Parameters And State
+    //==============================================================================
+
     localparam int DATA_WIDTH = 8;
     localparam int FIFO_ADDR  = 4;
     localparam int DEPTH      = 1 << FIFO_ADDR;
+
+    //==============================================================================
+    // Interface Instance
+    //==============================================================================
 
     AsyncFifoIf #(
         .DATA_WIDTH (DATA_WIDTH)
@@ -37,6 +49,10 @@ module TbAsyncFifo;
     logic [DATA_WIDTH-1:0] r_expected_queue [$];
     int unsigned r_error_count;
     int unsigned r_read_count;
+
+    //==============================================================================
+    // DUT Instantiation
+    //==============================================================================
 
     AsyncFifo #(
         .DATA_WIDTH (DATA_WIDTH),
@@ -54,6 +70,10 @@ module TbAsyncFifo;
         .o_rempty (fifo_if.o_rempty)
     );
 
+    //==============================================================================
+    // Clock Generation
+    //==============================================================================
+
     initial begin
         fifo_if.i_wclk = 1'b0;
         forever #5 fifo_if.i_wclk = ~fifo_if.i_wclk;
@@ -64,6 +84,10 @@ module TbAsyncFifo;
         forever #11 fifo_if.i_rclk = ~fifo_if.i_rclk;
     end
 
+    //==============================================================================
+    // Test Sequence
+    //==============================================================================
+
     initial begin
         init_interface();
         apply_reset();
@@ -72,6 +96,10 @@ module TbAsyncFifo;
         run_interleaved_case();
         report_summary();
     end
+
+    //==============================================================================
+    // Initialization And Reset Tasks
+    //==============================================================================
 
     task automatic init_interface();
         begin
@@ -96,6 +124,10 @@ module TbAsyncFifo;
             repeat (4) @(posedge fifo_if.i_wclk);
         end
     endtask
+
+    //==============================================================================
+    // Bus Driver Tasks
+    //==============================================================================
 
     task automatic write_data(input logic [DATA_WIDTH-1:0] data);
         begin
@@ -122,6 +154,10 @@ module TbAsyncFifo;
             fifo_if.i_rinc <= 1'b0;
         end
     endtask
+
+    //==============================================================================
+    // Directed Test Scenarios
+    //==============================================================================
 
     task automatic run_fill_case();
         logic [DATA_WIDTH-1:0] write_value;
@@ -176,6 +212,10 @@ module TbAsyncFifo;
         end
     endtask
 
+    //==============================================================================
+    // Scoreboard Monitor
+    //==============================================================================
+
     always_ff @(posedge fifo_if.i_rclk or negedge fifo_if.i_rrst_n) begin
         if (!fifo_if.i_rrst_n) begin
             r_read_count <= 0;
@@ -200,6 +240,10 @@ module TbAsyncFifo;
             r_read_count <= r_read_count + 1;
         end
     end
+
+    //==============================================================================
+    // Summary Reporting
+    //==============================================================================
 
     task automatic report_summary();
         begin

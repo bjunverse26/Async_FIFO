@@ -9,6 +9,10 @@
 
 `timescale 1ns / 1ps
 
+//==============================================================================
+// Testbench Interface
+//==============================================================================
+
 interface HandshakeCdcIf #(
     parameter int DATA_WIDTH = 8
 );
@@ -24,7 +28,15 @@ endinterface
 
 module TbHandshakeCdc;
 
+    //==============================================================================
+    // Testbench Parameters And State
+    //==============================================================================
+
     localparam int DATA_WIDTH = 8;
+
+    //==============================================================================
+    // Interface Instance
+    //==============================================================================
 
     HandshakeCdcIf #(
         .DATA_WIDTH (DATA_WIDTH)
@@ -33,6 +45,10 @@ module TbHandshakeCdc;
     logic [DATA_WIDTH-1:0] r_expected_queue [$];
     int unsigned r_error_count;
     int unsigned r_receive_count;
+
+    //==============================================================================
+    // DUT Instantiation
+    //==============================================================================
 
     HandshakeCdc #(
         .DATA_WIDTH (DATA_WIDTH)
@@ -47,6 +63,10 @@ module TbHandshakeCdc;
         .o_data       (cdc_if.o_data)
     );
 
+    //==============================================================================
+    // Clock Generation
+    //==============================================================================
+
     initial begin
         cdc_if.i_clk_src = 1'b0;
         forever #5 cdc_if.i_clk_src = ~cdc_if.i_clk_src;
@@ -57,6 +77,10 @@ module TbHandshakeCdc;
         forever #11 cdc_if.i_clk_dst = ~cdc_if.i_clk_dst;
     end
 
+    //==============================================================================
+    // Test Sequence
+    //==============================================================================
+
     initial begin
         init_interface();
         apply_reset();
@@ -66,6 +90,10 @@ module TbHandshakeCdc;
         wait_for_receives(3);
         report_summary();
     end
+
+    //==============================================================================
+    // Initialization And Reset Tasks
+    //==============================================================================
 
     task automatic init_interface();
         begin
@@ -121,6 +149,10 @@ module TbHandshakeCdc;
         end
     endtask
 
+    //==============================================================================
+    // Scoreboard Monitor
+    //==============================================================================
+
     always_ff @(posedge cdc_if.i_clk_dst or negedge cdc_if.i_rstn_dst) begin
         if (!cdc_if.i_rstn_dst) begin
             r_receive_count <= 0;
@@ -145,6 +177,10 @@ module TbHandshakeCdc;
             r_receive_count <= r_receive_count + 1;
         end
     end
+
+    //==============================================================================
+    // Summary Reporting
+    //==============================================================================
 
     task automatic report_summary();
         begin
