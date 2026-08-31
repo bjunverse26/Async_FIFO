@@ -17,6 +17,7 @@ module HandshakeCdc #(
     input  logic                     i_rstn_src,
     input  logic                     i_valid_src,
     input  logic [DATA_WIDTH-1:0]    i_data,
+    output logic                     o_ready_src,
 
     input  logic                     i_clk_dst,
     input  logic                     i_rstn_dst,
@@ -27,16 +28,18 @@ module HandshakeCdc #(
     logic [DATA_WIDTH-1:0] r_data_hold;
     logic                  r_request_src;
     logic                  r_ack_dst;
-    logic                  r_sync1_request_src;
-    logic                  r_sync2_request_src;
-    logic                  r_sync1_ack_dst;
-    logic                  r_sync2_ack_dst;
+    (* ASYNC_REG = "TRUE" *) logic r_sync1_request_src;
+    (* ASYNC_REG = "TRUE" *) logic r_sync2_request_src;
+    (* ASYNC_REG = "TRUE" *) logic r_sync1_ack_dst;
+    (* ASYNC_REG = "TRUE" *) logic r_sync2_ack_dst;
+
+    assign o_ready_src = !r_request_src && !r_sync2_ack_dst;
 
     always_ff @(posedge i_clk_src or negedge i_rstn_src) begin
         if (!i_rstn_src) begin
             r_data_hold   <= '0;
             r_request_src <= 1'b0;
-        end else if (!r_request_src && i_valid_src) begin
+        end else if (o_ready_src && i_valid_src) begin
             r_data_hold   <= i_data;
             r_request_src <= 1'b1;
         end else if (r_request_src && r_sync2_ack_dst) begin

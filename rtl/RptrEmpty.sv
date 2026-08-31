@@ -26,7 +26,8 @@ module RptrEmpty #(
     logic [FIFO_ADDR:0] w_rgray_next;
     logic               w_rempty_next;
 
-    assign w_rbin_next   = r_rbin + (i_rinc && !o_rempty);
+    assign w_rbin_next   = r_rbin
+                         + {{FIFO_ADDR{1'b0}}, (i_rinc && !o_rempty)};
     assign w_rgray_next  = (w_rbin_next >> 1) ^ w_rbin_next;
     assign o_raddr       = r_rbin[FIFO_ADDR-1:0];
     assign w_rempty_next = (w_rgray_next == i_sync_wptr);

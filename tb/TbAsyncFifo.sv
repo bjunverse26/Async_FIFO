@@ -131,27 +131,27 @@ module TbAsyncFifo;
 
     task automatic write_data(input logic [DATA_WIDTH-1:0] data);
         begin
-            @(posedge fifo_if.i_wclk);
+            @(negedge fifo_if.i_wclk);
             if (!fifo_if.o_wfull) begin
-                fifo_if.i_wdata <= data;
-                fifo_if.i_winc  <= 1'b1;
+                fifo_if.i_wdata = data;
+                fifo_if.i_winc  = 1'b1;
                 r_expected_queue.push_back(data);
             end else begin
-                fifo_if.i_winc <= 1'b0;
+                fifo_if.i_winc = 1'b0;
                 $display("[INFO] Write skipped because FIFO is full");
             end
 
-            @(posedge fifo_if.i_wclk);
-            fifo_if.i_winc <= 1'b0;
+            @(negedge fifo_if.i_wclk);
+            fifo_if.i_winc = 1'b0;
         end
     endtask
 
     task automatic read_one();
         begin
-            @(posedge fifo_if.i_rclk);
-            fifo_if.i_rinc <= !fifo_if.o_rempty;
-            @(posedge fifo_if.i_rclk);
-            fifo_if.i_rinc <= 1'b0;
+            @(negedge fifo_if.i_rclk);
+            fifo_if.i_rinc = !fifo_if.o_rempty;
+            @(negedge fifo_if.i_rclk);
+            fifo_if.i_rinc = 1'b0;
         end
     endtask
 
@@ -216,7 +216,7 @@ module TbAsyncFifo;
     // Scoreboard Monitor
     //==============================================================================
 
-    always_ff @(posedge fifo_if.i_rclk or negedge fifo_if.i_rrst_n) begin
+    always @(posedge fifo_if.i_rclk or negedge fifo_if.i_rrst_n) begin
         if (!fifo_if.i_rrst_n) begin
             r_read_count <= 0;
         end else if (fifo_if.i_rinc && !fifo_if.o_rempty) begin

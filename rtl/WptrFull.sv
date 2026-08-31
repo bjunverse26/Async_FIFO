@@ -26,7 +26,8 @@ module WptrFull #(
     logic [FIFO_ADDR:0] w_wgray_next;
     logic               w_wfull_next;
 
-    assign w_wbin_next  = r_wbin + (i_winc && !o_wfull);
+    assign w_wbin_next  = r_wbin
+                        + {{FIFO_ADDR{1'b0}}, (i_winc && !o_wfull)};
     assign w_wgray_next = (w_wbin_next >> 1) ^ w_wbin_next;
     assign o_waddr      = r_wbin[FIFO_ADDR-1:0];
 

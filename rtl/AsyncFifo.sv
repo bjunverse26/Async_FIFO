@@ -29,10 +29,10 @@ module AsyncFifo #(
 
     logic [FIFO_ADDR:0]   w_wptr;
     logic [FIFO_ADDR:0]   w_rptr;
-    logic [FIFO_ADDR:0]   r_sync1_wptr;
-    logic [FIFO_ADDR:0]   r_sync2_wptr;
-    logic [FIFO_ADDR:0]   r_sync1_rptr;
-    logic [FIFO_ADDR:0]   r_sync2_rptr;
+    (* ASYNC_REG = "TRUE" *) logic [FIFO_ADDR:0] r_sync1_wptr;
+    (* ASYNC_REG = "TRUE" *) logic [FIFO_ADDR:0] r_sync2_wptr;
+    (* ASYNC_REG = "TRUE" *) logic [FIFO_ADDR:0] r_sync1_rptr;
+    (* ASYNC_REG = "TRUE" *) logic [FIFO_ADDR:0] r_sync2_rptr;
     logic [FIFO_ADDR-1:0] w_waddr;
     logic [FIFO_ADDR-1:0] w_raddr;
 

@@ -20,6 +20,7 @@ interface HandshakeCdcIf #(
     logic                  i_rstn_src;
     logic                  i_valid_src;
     logic [DATA_WIDTH-1:0] i_data;
+    logic                  o_ready_src;
     logic                  i_clk_dst;
     logic                  i_rstn_dst;
     logic                  o_valid_dst;
@@ -57,6 +58,7 @@ module TbHandshakeCdc;
         .i_rstn_src   (cdc_if.i_rstn_src),
         .i_valid_src  (cdc_if.i_valid_src),
         .i_data       (cdc_if.i_data),
+        .o_ready_src  (cdc_if.o_ready_src),
         .i_clk_dst    (cdc_if.i_clk_dst),
         .i_rstn_dst   (cdc_if.i_rstn_dst),
         .o_valid_dst  (cdc_if.o_valid_dst),
@@ -120,13 +122,13 @@ module TbHandshakeCdc;
 
     task automatic send_word(input logic [DATA_WIDTH-1:0] data);
         begin
+            wait (cdc_if.o_ready_src);
             r_expected_queue.push_back(data);
-            @(posedge cdc_if.i_clk_src);
-            cdc_if.i_data      <= data;
-            cdc_if.i_valid_src <= 1'b1;
-            @(posedge cdc_if.i_clk_src);
-            cdc_if.i_valid_src <= 1'b0;
-            repeat (8) @(posedge cdc_if.i_clk_src);
+            @(negedge cdc_if.i_clk_src);
+            cdc_if.i_data      = data;
+            cdc_if.i_valid_src = 1'b1;
+            @(negedge cdc_if.i_clk_src);
+            cdc_if.i_valid_src = 1'b0;
         end
     endtask
 
@@ -153,7 +155,7 @@ module TbHandshakeCdc;
     // Scoreboard Monitor
     //==============================================================================
 
-    always_ff @(posedge cdc_if.i_clk_dst or negedge cdc_if.i_rstn_dst) begin
+    always @(posedge cdc_if.i_clk_dst or negedge cdc_if.i_rstn_dst) begin
         if (!cdc_if.i_rstn_dst) begin
             r_receive_count <= 0;
         end else if (cdc_if.o_valid_dst) begin
